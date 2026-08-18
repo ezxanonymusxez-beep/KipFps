@@ -270,19 +270,21 @@ local function updateStretch()
     end) 
 end
 
---// FPS BOOSTER - COLORI PERFETTI
+--// FPS BOOSTER - COLORI PERFETTI (LUMINOSIDAD REDUCIDA)
 local function applyFPS()
     if not fpsEnabled then return end
     
     local cc = Instance.new("ColorCorrectionEffect", Lighting)
     
-    cc.Brightness = 0.03
-    cc.Contrast = 0.08
-    cc.Saturation = 0.35
-    cc.TintColor = Color3.fromRGB(255, 252, 250)
+    -- LUMINOSIDAD REDUCIDA PARA MEJOR DIFERENCIACIÓN DE OBJETOS
+    cc.Brightness = -0.05        -- Antes: 0.03 | Ahora: -0.05 (más oscuro)
+    cc.Contrast = 0.15           -- Antes: 0.08 | Ahora: 0.15 (más contraste)
+    cc.Saturation = 0.25         -- Antes: 0.35 | Ahora: 0.25 (menos saturado)
+    cc.TintColor = Color3.fromRGB(245, 245, 240)  -- Antes: 255,252,250 | Ahora más neutro
     
-    Lighting.Ambient = Color3.fromRGB(220, 220, 220)
-    Lighting.OutdoorAmbient = Color3.fromRGB(240, 235, 235)
+    -- Iluminación ambiental reducida
+    Lighting.Ambient = Color3.fromRGB(180, 180, 180)        -- Antes: 220,220,220
+    Lighting.OutdoorAmbient = Color3.fromRGB(200, 200, 195) -- Antes: 240,235,235
     Lighting.GlobalShadows = false
     Lighting.FogEnd = 9e9
     
