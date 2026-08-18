@@ -1,1 +1,317 @@
+if not game:IsLoaded() then game.Loaded:Wait() end
 
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local Lighting = game:GetService("Lighting")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+local cam = workspace.CurrentCamera
+
+--// VARIABILI
+local stretchEnabled = true
+local fpsEnabled = true
+local stretchConn = nil
+
+--// INTRO ULTRA FIGA (Vignette + Scanlines + Scramble + Glitch)
+task.spawn(function()
+    local introGui = Instance.new("ScreenGui", CoreGui)
+    introGui.Name = "UltraIntroV2"
+    introGui.DisplayOrder = 99999
+    introGui.ResetOnSpawn = false
+    
+    local mainContainer = Instance.new("Frame", introGui)
+    mainContainer.Size = UDim2.new(1, 0, 1, 0)
+    mainContainer.BackgroundTransparency = 1
+    
+    -- VIGNETTE (scurisce i bordi, funziona su tutti gli schermi)
+    local vignette = Instance.new("Frame", mainContainer)
+    vignette.Size = UDim2.new(1, 0, 1, 0)
+    vignette.BackgroundTransparency = 1
+    
+    local vignetteGradient = Instance.new("UIGradient", vignette)
+    vignetteGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
+        ColorSequenceKeypoint.new(0.3, Color3.fromRGB(0, 0, 0)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 0, 0)),
+        ColorSequenceKeypoint.new(0.7, Color3.fromRGB(0, 0, 0)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
+    })
+    vignetteGradient.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.8),    -- Bordi scuri
+        NumberSequenceKeypoint.new(0.3, 0.4),
+        NumberSequenceKeypoint.new(0.5, 0),    -- Centro trasparente
+        NumberSequenceKeypoint.new(0.7, 0.4),
+        NumberSequenceKeypoint.new(1, 0.8)     -- Bordi scuri
+    })
+    vignetteGradient.Rotation = 0
+    
+    -- SCANLINES CRT (linee orizzontali tipo TV vecchia)
+    local scanlines = Instance.new("Frame", mainContainer)
+    scanlines.Size = UDim2.new(1, 0, 1, 0)
+    scanlines.BackgroundTransparency = 1
+    
+    -- Crea righe ogni 4 pixel
+    for i = 0, 200 do
+        local line = Instance.new("Frame", scanlines)
+        line.Size = UDim2.new(1, 0, 0, 1)
+        line.Position = UDim2.new(0, 0, 0, i * 4)
+        line.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        line.BackgroundTransparency = 0.95
+        line.BorderSizePixel = 0
+    end
+    
+    -- Effetto ACCENSIONE TV (flash iniziale)
+    local turnOn = Instance.new("Frame", mainContainer)
+    turnOn.Size = UDim2.new(1, 0, 1, 0)
+    turnOn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    turnOn.BackgroundTransparency = 0
+    
+    -- Container testo
+    local textContainer = Instance.new("Frame", mainContainer)
+    textContainer.Size = UDim2.new(0, 700, 0, 150)
+    textContainer.Position = UDim2.new(0.5, -350, 0.5, -75)
+    textContainer.BackgroundTransparency = 1
+    
+    -- GLITCH RGB LAYERS
+    local glitchRed = Instance.new("TextLabel", textContainer)
+    glitchRed.Size = UDim2.new(1, 0, 1, 0)
+    glitchRed.BackgroundTransparency = 1
+    glitchRed.Text = "FPS BY wKip"
+    glitchRed.Font = Enum.Font.GothamBlack
+    glitchRed.TextSize = 62
+    glitchRed.TextColor3 = Color3.fromRGB(255, 0, 0)
+    glitchRed.TextTransparency = 0.7
+    glitchRed.Position = UDim2.new(0, -3, 0, 0)
+    glitchRed.ZIndex = 1
+    
+    local glitchCyan = Instance.new("TextLabel", textContainer)
+    glitchCyan.Size = UDim2.new(1, 0, 1, 0)
+    glitchCyan.BackgroundTransparency = 1
+    glitchCyan.Text = "FPS BY wKip"
+    glitchCyan.Font = Enum.Font.GothamBlack
+    glitchCyan.TextSize = 62
+    glitchCyan.TextColor3 = Color3.fromRGB(0, 255, 255)
+    glitchCyan.TextTransparency = 0.7
+    glitchCyan.Position = UDim2.new(0, 3, 0, 0)
+    glitchCyan.ZIndex = 1
+    
+    -- SCRAMBLE TEXT
+    local scrambleText = Instance.new("TextLabel", textContainer)
+    scrambleText.Size = UDim2.new(1, 0, 1, 0)
+    scrambleText.BackgroundTransparency = 1
+    scrambleText.Text = "X7#9$K@1!?"
+    scrambleText.Font = Enum.Font.Code
+    scrambleText.TextSize = 60
+    scrambleText.TextColor3 = Color3.fromRGB(220, 20, 60)
+    scrambleText.TextTransparency = 0
+    scrambleText.ZIndex = 5
+    
+    -- TESTO FINALE
+    local mainText = Instance.new("TextLabel", textContainer)
+    mainText.Size = UDim2.new(1, 0, 1, 0)
+    mainText.BackgroundTransparency = 1
+    mainText.Text = "FPS BY wKip"
+    mainText.Font = Enum.Font.GothamBlack
+    mainText.TextSize = 60
+    mainText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    mainText.TextTransparency = 1
+    mainText.ZIndex = 10
+    
+    local bloodGradient = Instance.new("UIGradient", mainText)
+    bloodGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(139, 0, 0)),
+        ColorSequenceKeypoint.new(0.3, Color3.fromRGB(220, 20, 60)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 60, 60)),
+        ColorSequenceKeypoint.new(0.7, Color3.fromRGB(220, 20, 60)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(139, 0, 0))
+    })
+    
+    -- Glow
+    for i = 1, 3 do
+        local glow = Instance.new("TextLabel", textContainer)
+        glow.Size = UDim2.new(1, 0, 1, 0)
+        glow.BackgroundTransparency = 1
+        glow.Text = "FPS BY wKip"
+        glow.Font = Enum.Font.GothamBlack
+        glow.TextSize = 60 + (i * 4)
+        glow.TextColor3 = Color3.fromRGB(220, 20, 60)
+        glow.TextTransparency = 0.9 - (i * 0.15)
+        glow.ZIndex = 0
+    end
+    
+    local strokeBlack = Instance.new("UIStroke", mainText)
+    strokeBlack.Color = Color3.fromRGB(0, 0, 0)
+    strokeBlack.Thickness = 3
+    strokeBlack.Transparency = 0.4
+    
+    local strokeRed = Instance.new("UIStroke", mainText)
+    strokeRed.Color = Color3.fromRGB(220, 20, 60)
+    strokeRed.Thickness = 1.5
+    strokeRed.Transparency = 0.2
+    
+    -- Particelle
+    local particleContainer = Instance.new("Frame", mainContainer)
+    particleContainer.Size = UDim2.new(1, 0, 1, 0)
+    particleContainer.BackgroundTransparency = 1
+    
+    local particles = {}
+    local colors = {
+        Color3.fromRGB(220, 20, 60),
+        Color3.fromRGB(255, 60, 60),
+        Color3.fromRGB(139, 0, 0),
+        Color3.fromRGB(255, 140, 0)
+    }
+    
+    for i = 1, 40 do
+        local p = Instance.new("Frame", particleContainer)
+        p.Size = UDim2.new(0, math.random(3, 6), 0, math.random(3, 6))
+        p.Position = UDim2.new(0.5, 0, 0.5, 0)
+        p.BackgroundColor3 = colors[math.random(1, #colors)]
+        p.BackgroundTransparency = 1
+        p.BorderSizePixel = 0
+        p.ZIndex = 8
+        
+        local corner = Instance.new("UICorner", p)
+        corner.CornerRadius = UDim.new(1, 0)
+        
+        table.insert(particles, {frame = p, angle = math.random() * math.pi * 2, dist = math.random(20, 150)})
+    end
+    
+    -- ANIMAZIONE
+    
+    -- 1. Accensione TV (flash veloce)
+    TweenService:Create(turnOn, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+    
+    -- 2. Scramble
+    local chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*"
+    local finalText = "FPS BY wKip"
+    local scrambleDuration = 1.2
+    local startTime = tick()
+    
+    while tick() - startTime < scrambleDuration do
+        local progress = (tick() - startTime) / scrambleDuration
+        local revealed = math.floor(progress * #finalText)
+        local result = ""
+        
+        for i = 1, #finalText do
+            if i <= revealed then
+                result = result .. finalText:sub(i, i)
+            else
+                result = result .. chars:sub(math.random(1, #chars), math.random(1, #chars))
+            end
+        end
+        
+        scrambleText.Text = result
+        wait(0.05)
+    end
+    
+    scrambleText.Text = finalText
+    
+    -- 3. Switch con glitch
+    TweenService:Create(scrambleText, TweenInfo.new(0.1), {TextTransparency = 1}):Play()
+    TweenService:Create(mainText, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+    
+    -- Glitch RGB
+    for i = 1, 5 do
+        glitchRed.Position = UDim2.new(0, math.random(-5, -2), 0, math.random(-2, 2))
+        glitchCyan.Position = UDim2.new(0, math.random(2, 5), 0, math.random(-2, 2))
+        glitchRed.TextTransparency = 0.5
+        glitchCyan.TextTransparency = 0.5
+        wait(0.05)
+        glitchRed.TextTransparency = 0.8
+        glitchCyan.TextTransparency = 0.8
+        wait(0.05)
+    end
+    
+    TweenService:Create(glitchRed, TweenInfo.new(0.2), {TextTransparency = 1}):Play()
+    TweenService:Create(glitchCyan, TweenInfo.new(0.2), {TextTransparency = 1}):Play()
+    
+    -- 4. Heartbeat
+    local function doPulse()
+        TweenService:Create(mainText, TweenInfo.new(0.15, Enum.EasingStyle.Quart), {TextSize = 68}):Play()
+        wait(0.15)
+        TweenService:Create(mainText, TweenInfo.new(0.2, Enum.EasingStyle.Quart), {TextSize = 60}):Play()
+    end
+    
+    doPulse()
+    wait(0.4)
+    doPulse()
+    
+    -- 5. Particelle
+    for _, p in ipairs(particles) do
+        p.frame.BackgroundTransparency = math.random(0.3, 0.6)
+        local endX = 0.5 + math.cos(p.angle) * (p.dist / 700)
+        local endY = 0.5 + math.sin(p.angle) * (p.dist / 500)
+        
+        TweenService:Create(p.frame,
+            TweenInfo.new(1.5, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out),
+            {Position = UDim2.new(endX, 0, endY, 0), BackgroundTransparency = 1}
+        ):Play()
+    end
+    
+    -- 6. Fade out
+    wait(1.5)
+    TweenService:Create(vignette, TweenInfo.new(0.8), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(scanlines, TweenInfo.new(0.8), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(mainText, TweenInfo.new(0.6), {TextTransparency = 1}):Play()
+    
+    wait(1)
+    introGui:Destroy()
+end)
+
+--// STRETCHED
+local function updateStretch()
+    if stretchConn then stretchConn:Disconnect(); stretchConn = nil end
+    if not stretchEnabled then return end
+    stretchConn = RunService.RenderStepped:Connect(function()
+        cam.CFrame = cam.CFrame * CFrame.new(0, 0, 0, 1, 0, 0, 0, 0.75, 0, 0, 0, 1) 
+    end) 
+end
+
+--// FPS BOOSTER - COLORI PERFETTI
+local function applyFPS()
+    if not fpsEnabled then return end
+    
+    local cc = Instance.new("ColorCorrectionEffect", Lighting)
+    
+    cc.Brightness = 0.03
+    cc.Contrast = 0.08
+    cc.Saturation = 0.35
+    cc.TintColor = Color3.fromRGB(255, 252, 250)
+    
+    Lighting.Ambient = Color3.fromRGB(220, 220, 220)
+    Lighting.OutdoorAmbient = Color3.fromRGB(240, 235, 235)
+    Lighting.GlobalShadows = false
+    Lighting.FogEnd = 9e9
+    
+    pcall(function() 
+        settings().Rendering.QualityLevel = Enum.QualityLevel.Level01 
+    end)
+    
+    local function optimize(o)
+        if o:IsA("BasePart") then 
+            o.Material = Enum.Material.SmoothPlastic 
+            o.Reflectance = 0 
+            o.CastShadow = false
+        elseif o:IsA("ParticleEmitter") or o:IsA("Trail") then
+            o.Enabled = false
+        elseif o:IsA("Decal") or o:IsA("Texture") then
+            o.Transparency = 1
+        end
+    end
+    
+    Workspace.DescendantAdded:Connect(optimize)
+    for _, v in pairs(Workspace:GetDescendants()) do optimize(v) end
+end
+
+--// ATTIVAZIONE
+task.spawn(function()
+    task.wait(5)
+    applyFPS()
+    updateStretch()
+    print("✅ Ultra Vignette Edition attivata | FPS BY wKip")
+end)
+
+print("🩸 Ultra Vignette Edition caricata")
